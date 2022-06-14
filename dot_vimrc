@@ -1,0 +1,44 @@
+" Plugins
+call plug#begin()
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+call plug#end()
+
+set nocompatible
+set encoding=utf-8
+syntax enable
+set autoread
+set history=200
+
+set autoindent
+set backspace=indent,eol,start
+set smarttab
+set nrformats-=octal " Do not let vim consider numbers as octals.
+set laststatus=2 " always show status
+set ruler " show cursor position
+set scrolloff=1 " scrolling offset
+set sidescrolloff=5 " scrolling offset for the overreaching line
+set display+=lastline
+
+" TODO: debug
+set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+
+" Tabbing
+set tabstop=4
+set shiftwidth=0 " Make it always match `tabstop`
+
+if !empty(&viminfo)
+  set viminfo^=!
+endif
+
+if empty(mapcheck('<S-Tab>', 'i'))
+  inoremap <S-Tab> <C-d>
+endif
+
+" Allow color schemes to do bright colors without forcing bold.
+" from: github.com/tpope/vim-sensible, licensed under vim license `:help license`
+if &t_Co == 8 && $TERM !~# '^Eterm'
+  set t_Co=16
+endif
+
+" Filetype configration
+autocmd FileType nix setlocal ts=2 sw=2 expandtab
