@@ -21,8 +21,11 @@
     # `command` is a POSIX compatible built-in.
     # -> See: https://stackoverflow.com/a/37056347
 
+    # TODO: Fix path issue
+    # TODO: Find a dynamic path
     if command -v fish; then
-      grep -qxF "$(command -v fish)" /etc/shells || echo "$(command -v fish)" | sudo tee -a /etc/shells > /dev/null
+      _bin_path="/run/current-system/sw/bin/fish"
+      grep -qxF $_bin_path /etc/shells || echo $_bin_path | sudo tee -a /etc/shells > /dev/null
     fi
     '';
 
