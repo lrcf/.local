@@ -1,8 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
+  # Used for backwards compatibility.
   system.stateVersion = 4;
   time.timeZone = "Europe/Brussels";
 
@@ -10,35 +9,52 @@
   services.nix-daemon.enable = true;
   nix.package = pkgs.nix;
 
-  # List packages installed in system profile. To search by name, run:
-  # $ nix-env -qaP | grep wget
-  environment.systemPackages =
-    [ pkgs.fish
-      pkgs.git
-      pkgs.vim
-    ];
+  # Packages installed for the whole system
+  environment.systemPackages = with pkgs; [
+    fish
+    git
+    vim
+  ];
+  system.activationScripts.applications.text =
+    ''
+    # Adds `fish` to the list of trusted shells
+    # `command` is a POSIX compatible built-in.
+    # -> See: https://stackoverflow.com/a/37056347
 
-  # Configure default editor and language variable for shell apps.
-  environment.variables = {
-    EDITOR = "vim";
-    LANG = "en_GB.UTF-8";
+    if command -v fish; then
+      grep -qxF "$(command -v fish)" /etc/shells || echo "$(command -v fish)" | sudo tee -a /etc/shells > /dev/null
+    fi
+    '';
+
+  # Packages not available on Nix installed for the whole system
+  homebrew = {
+    enable = true;
+    autoUpdate = true;
+    cleanup = "zap";
+    casks = [
+      "1password"
+      "bettertouchtool"
+      "dash"
+      "raycast"
+      "secretive"
+    ];
   };
+
+  # Set default login shell
+  # environment.loginShell = "/run/current-system/sw/bin/fish";
 
   # Load nix-darwin environment in bash, fish, and zsh.
   programs.bash.enable = true;
   programs.fish.enable = true; # Must be post-installed
   programs.zsh.enable = true; # Default in Catalina+
 
+  # System configuration
   system.defaults = {
     finder = {
       AppleShowAllExtensions = true;
       QuitMenuItem = true;
       ShowPathbar = true;
       ShowStatusBar = true;
-    };
-
-    universalaccess = {
-      reduceTransparency = false;
     };
 
     NSGlobalDomain = {
@@ -66,15 +82,15 @@
       # Show control characters in caret notation
       NSTextShowsControlCharacters = true;
 
-      # NSQuitAlwaysKeepsWindows
-
       NSAutomaticSpellingCorrectionEnabled = false;
     };
   };
 
-  system.activationScripts.postActivation.text =
+  # Additional configuration not supported by the system
+  system.activationScripts.extraUserActivation.text =
     ''
-    # PR pending for a year: LnL7/nix-darwin#230 defaults write -g AppleHighlightColor 0.968627 0.831373 1.000000 Purple
+    # Changes highlight colours
+    defaults write -g AppleHighlightColor -string "0.968627 0.831373 1.000000 Purple"
 
     # System locale settings
     defaults write -g AppleLanguages -array "en-GB" "cs-CZ" "sk-SK"
@@ -83,10 +99,10 @@
     # Disable resume after restart by default
     defaults write com.apple.systempreferences NSQuitAlwaysKeepsWindows -bool false
 
-    # Enable Help Viewer Dev Mode and set their windows to not float
-    defaults write com.apple.helpviewer DevMode -bool true
-
-    # Save screen captures in .png if they’re saved as files.
     defaults write com.apple.screencapture type -string "png"
+
+    # Terminal settings
+    defaults write com.apple.Terminal SecureKeyboardEntry -bool true
+    defaults write com.apple.Terminal "Startup Window Settings" -string "Basic"
     '';
 }
