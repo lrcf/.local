@@ -1,0 +1,7 @@
+[commit]
+gpgSign = true
+
+[user]
+name = @lrcf
+email = 89586611+lrcf@users.noreply.github.com
+signingKey = 63B95D6BDD8B1D33
